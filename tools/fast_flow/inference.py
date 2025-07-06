@@ -20,7 +20,7 @@ def inference(
         model.load_state_dict(weight)
         model = model.to(device)
 
-    model.eval()
+    model.eval().half()
     category_mean, category_std = MVTEC_MEAN_STD[category]
     image = cv2.imread(image_path)
     if image is None:
@@ -33,18 +33,17 @@ def inference(
     image[1] = (image[1] - category_mean[1]) / category_std[1]
     image[2] = (image[2] - category_mean[2]) / category_std[2]
     image = torch.tensor(image, dtype=torch.float32)
-    image = image.unsqueeze(0)  # Add batch dimension
-    image = image.to(device)
+    image = image.unsqueeze(0)
+    image = image.to(device).half()
     with torch.no_grad():
         output = model(image)
         anomaly_map = output['anomaly_map']
         pred_score = output['pred_score'].item()
-        anomaly_map = anomaly_map.squeeze(0).squeeze(0).cpu().numpy()
-        anomaly_map = (anomaly_map - anomaly_map.min()) / (anomaly_map.max() - anomaly_map.min())
+        anomaly_map = anomaly_map.squeeze(0).squeeze(0).cpu().numpy() + 1
+        anomaly_map[anomaly_map < 0.7] = 0
+        anomaly_map[anomaly_map >= 0.7] = 1
         anomaly_map = (anomaly_map * 255).astype('uint8')
-        anomaly_map[anomaly_map < 128] = 0
         anomaly_map = cv2.resize(anomaly_map, (image_size, image_size))
-        
         
     cv2.imwrite('anomaly_map.png', anomaly_map)
     print(f"Predicted anomaly score: {1 + pred_score:.4f}")
