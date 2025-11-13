@@ -20,7 +20,7 @@ class MVTecBase(Dataset):
         self.image_paths = []
         self.labels = []
         self.mask_paths = []
-        self.image_transfrom = None
+        self.image_transform = None
         self.target_transform = None
         self.total_images = 0
         
@@ -28,7 +28,7 @@ class MVTecBase(Dataset):
         self._build_transform()
     
     def _build_transform(self):
-        self.image_transfrom = A.Compose([
+        self.image_transform = A.Compose([
             A.Resize(self.image_size[0], self.image_size[1]),
             A.Normalize(mean=MVTEC_MEAN_STD[self.categories[0].value][0], std=MVTEC_MEAN_STD[self.categories[0].value][1]),
             ToTensorV2()
@@ -83,8 +83,8 @@ class MVTecBase(Dataset):
         mask_path = self.mask_paths[idx]
         image = np.array(Image.open(image_path).convert('RGB'))
 
-        if self.image_transfrom:
-            image = self.image_transfrom(image=image)['image']
+        if self.image_transform:
+            image = self.image_transform(image=image)['image']
         
         if mask_path and os.path.exists(mask_path):
             mask_np = np.array(Image.open(mask_path).convert('L'))
@@ -93,7 +93,7 @@ class MVTecBase(Dataset):
                 mask = transformed_mask['image']
             mask = (mask > 0.5).float()
         else:
-            mask = torch.zeros_like(image, dtype=torch.float32)
+            mask = torch.zeros((1, image.shape[1], image.shape[2]), dtype=torch.float32)
         
         return image, label, mask
 

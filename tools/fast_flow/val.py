@@ -30,7 +30,7 @@ def validate(
         model = model.to(device)
     
     if loader is None:
-        datasets = MVTecFF(root_dir=root_path, category=category, is_train=False, image_size=(image_size, image_size))
+        datasets = MVTecFF(root_dir=root_path, category=category, is_train=False, image_size=(image_size, image_size), repeat=1)
         loader = DataLoader(
             datasets,
             batch_size=batch_size,

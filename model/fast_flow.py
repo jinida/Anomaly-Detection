@@ -71,7 +71,6 @@ class FastFlow(nn.Module):
                 0.5 * torch.sum(output**2, dim=(1, 2, 3)) - log_jac_dets
             )
             outputs.append(output)
-        ret = {"loss": loss}
         
         if not self.training:
             anomaly_map_list = []
@@ -89,9 +88,7 @@ class FastFlow(nn.Module):
                 
             anomaly_map_list = torch.stack(anomaly_map_list, dim=-1)
             anomaly_map = torch.mean(anomaly_map_list, dim=-1)
-            pred_socre = torch.amax(anomaly_map, dim=(2, 3))
-            ret["anomaly_map"] = anomaly_map
-            ret["pred_score"] = pred_socre
-            
-        return ret
+            pred_score = torch.amax(anomaly_map, dim=(2, 3))
+
+        return pred_score, anomaly_map
         

@@ -19,7 +19,7 @@ class MVTecFF(MVTecBase):
         image_file = self.image_paths[index]
         image = Image.open(image_file).convert('RGB')
         image = np.array(image)
-        image = self.image_transfrom(image=image)['image']
+        image = self.image_transform(image=image)['image']
         
         if self.is_train:
             return image
@@ -31,7 +31,7 @@ class MVTecFF(MVTecBase):
             else:
                 target = np.zeros((self.image_size[0], self.image_size[1]), dtype=np.float32) / 255.
             target = self.target_transform(image=target)['image']
-            return image, target, self.labels[index]
+            return image, self.labels[index], target
         
     def __len__(self):
         return len(self.image_paths) * self.repeat
